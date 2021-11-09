@@ -3,6 +3,7 @@ package dynamic_programming;
 import dynamic_programming.calculator.BellmanCalculator;
 import dynamic_programming.calculator.FindMax;
 import dynamic_programming.calculator.FindMin;
+import dynamic_programming.calculator.Strategy;
 import dynamic_programming.models.Edge;
 import dynamic_programming.models.Node;
 import dynamic_programming.repo.NodeRepo;
@@ -10,11 +11,15 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class TestDP {
 
+    final double DISCOUNT_FACTOR=1d;
     NodeRepo nodeRepo;
     BellmanCalculator bellmanCalculator;
 
@@ -46,7 +51,7 @@ public class TestDP {
         node3b.setEdges(Collections.emptyList() );
         nodeRepo.add(node3b);
 
-        bellmanCalculator=new BellmanCalculator(nodeRepo);
+        bellmanCalculator=new BellmanCalculator(nodeRepo,DISCOUNT_FACTOR);
 
     }
 
@@ -63,13 +68,42 @@ public class TestDP {
     }
 
     @Test
+    public void testDiscountFactor() {
+        double df=0.5;
+        BellmanCalculator bc=new BellmanCalculator(nodeRepo,df);
+        Assert.assertEquals(df,bc.calcDiscountFactorPowerDepth(1),0.1);
+        Assert.assertEquals(df*df,bc.calcDiscountFactorPowerDepth(2),0.1);
+
+    }
+
+    @Test
+    public void testFindBestOfEmptyList() {
+        Strategy strategy=new FindMax();
+        Assert.assertEquals(Strategy.BEST_IF_EMPTY_LIST,strategy.findBest(new ArrayList<>()),0.1);
+    }
+
+    @Test
+    public void testFindBestOfSameItemsList() {
+        Strategy strategy=new FindMax();
+        System.out.println(strategy.findBest(Arrays.asList(1d,1d,1d)));
+        //Assert.assertEquals(Strategy.BEST_IF_EMPTY_LIST,strategy.findBest(Arrays.asList(1d,1d,1d)),0.1);
+    }
+
+    @Test
     public void testBellmanCalculatorSetNodeValuesMinStrategy() {
         bellmanCalculator.setNodeValues(new FindMin());
-
         System.out.println(nodeRepo.toStringNodeValues());
-
         Assert.assertEquals(13,nodeRepo.get("2b").getValue(),0.1);
         Assert.assertEquals(8+13,nodeRepo.get("1a").getValue(),0.1);
+    }
+
+    @Test
+    public void testBellmanCalculatorSetNodeValuesMinStrategyZeroDiscount() {
+        double df=0.0;
+        BellmanCalculator bc=new BellmanCalculator(nodeRepo,df);
+        bc.setNodeValues(new FindMin());
+        System.out.println(nodeRepo.toStringNodeValues());
+        Assert.assertEquals(8+0*13,nodeRepo.get("1a").getValue(),0.1);
     }
 
     @Test
@@ -80,6 +114,21 @@ public class TestDP {
 
         Assert.assertEquals(25,nodeRepo.get("2b").getValue(),0.1);
         Assert.assertEquals(8+25,nodeRepo.get("1a").getValue(),0.1);
+    }
+
+    @Test
+    public void testBellmanCalculatorMinStrategyFindNodesOnOptimalPath() {
+        bellmanCalculator.setNodeValues(new FindMin());
+        //System.out.println(nodeRepo.toStringNodeValues());
+        Assert.assertEquals(13,nodeRepo.get("2b").getValue(),0.1);
+        Assert.assertEquals(8+13,nodeRepo.get("1a").getValue(),0.1);
+        List<Node> nodes = bellmanCalculator.findNodesOnOptimalPath(nodeRepo.get("1a"));
+        List filteredNames=nodes.stream().map(p->p.getName()).collect(Collectors.toList());
+
+        System.out.println(filteredNames);
+        Assert.assertEquals("1a",filteredNames.get(0));
+        Assert.assertEquals("2b",filteredNames.get(1));
+        Assert.assertEquals("3b",filteredNames.get(2));
     }
 
 }
