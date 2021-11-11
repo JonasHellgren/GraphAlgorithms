@@ -2,6 +2,8 @@ package dynamic_programming.calculator;
 
 import dynamic_programming.models.Edge;
 import dynamic_programming.models.Node;
+import dynamic_programming.models.NodeAbstract;
+import dynamic_programming.models.NullNode;
 import dynamic_programming.repo.NodeRepo;
 
 import java.util.ArrayList;
@@ -16,7 +18,7 @@ public class BellmanCalculator {
     double discountFactor;
     int maxDepth;
     int minDepth;
-    List<Node> nodesOnOptPath;
+    List<NodeAbstract> nodesOnOptPath;
 
     public BellmanCalculator(NodeRepo nodeRepo,Strategy strategy, double discountFactor) {
         this.nodeRepo = nodeRepo;
@@ -26,7 +28,7 @@ public class BellmanCalculator {
         this.minDepth = nodeRepo.findDepthMin();
     }
 
-    public List<Node> getNodesOnOptPath() {
+    public List<NodeAbstract> getNodesOnOptPath() {
         return nodesOnOptPath;
     }
 
@@ -69,18 +71,17 @@ public class BellmanCalculator {
     }
 
 
-    public List<Node> findNodesOnOptimalPath(Node startNode) {
+    public List<NodeAbstract> findNodesOnOptimalPath(NodeAbstract startNode) {
         nodesOnOptPath = new ArrayList<>();
-
-        addBestNodeAndFindNewBestNode(startNode);
+        addBestNodeAndFindNewBestNodeRecursive(startNode);
         return nodesOnOptPath;
     }
 
-    public void addBestNodeAndFindNewBestNode(Node bestNode) {
+    public void addBestNodeAndFindNewBestNodeRecursive(NodeAbstract bestNode) {
 
         nodesOnOptPath.add(bestNode);
 
-        Node newBestNode = null;
+        NodeAbstract newBestNode = new NullNode();
         double costBest = strategy.badNumber();
         for (Edge edge : bestNode.getEdges()) {
             if (!nodeRepo.exists(edge.destinationNodeName)) {
@@ -94,16 +95,16 @@ public class BellmanCalculator {
             }
         }
 
-        if (newBestNode == null && bestNode.getDepthIndex() < this.maxDepth) {
+        if (newBestNode  instanceof NullNode && bestNode.getDepthIndex() < this.maxDepth) {
             logger.warning("No destination node for node:" + bestNode.getName());
         }
 
-        if (newBestNode != null) {
-            addBestNodeAndFindNewBestNode(newBestNode);
+        if (! (newBestNode instanceof NullNode)) {
+            addBestNodeAndFindNewBestNodeRecursive(newBestNode);
         }
     }
 
-    private double calcLongCost(Node np, Edge edge) {
+    private double calcLongCost(NodeAbstract np, Edge edge) {
         double dfpd = calcDiscountFactorPowerDepth(np.getDepthIndex());
         return edge.cost + dfpd * nodeRepo.get(edge.destinationNodeName).getValue();
     }

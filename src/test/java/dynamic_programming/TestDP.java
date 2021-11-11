@@ -6,6 +6,7 @@ import dynamic_programming.calculator.FindMin;
 import dynamic_programming.calculator.Strategy;
 import dynamic_programming.models.Edge;
 import dynamic_programming.models.Node;
+import dynamic_programming.models.NodeAbstract;
 import dynamic_programming.repo.NodeRepo;
 import org.junit.Assert;
 import org.junit.Before;
@@ -120,7 +121,7 @@ public class TestDP {
     @Test
     public void testBellmanCalculatorMinStrategyFindNodesOnOptimalPath() {
         bellmanCalculator.setNodeValues();
-        List<Node> nodes = bellmanCalculator.findNodesOnOptimalPath(nodeRepo.get("1a"));
+        List<NodeAbstract> nodes = bellmanCalculator.findNodesOnOptimalPath(nodeRepo.get("1a"));
         List<String> filteredNames=nodes.stream().map(p->p.getName()).collect(Collectors.toList());
 
         System.out.println(filteredNames);
@@ -133,7 +134,7 @@ public class TestDP {
     public void testBellmanCalculatorMaxStrategyFindNodesOnOptimalPath() {
         bellmanCalculator=new BellmanCalculator(nodeRepo,new FindMax(),1);
         bellmanCalculator.setNodeValues();
-        List<Node> nodes = bellmanCalculator.findNodesOnOptimalPath(nodeRepo.get("1a"));
+        List<NodeAbstract> nodes = bellmanCalculator.findNodesOnOptimalPath(nodeRepo.get("1a"));
         List<String> filteredNames=nodes.stream().map(p->p.getName()).collect(Collectors.toList());
 
         System.out.println(filteredNames);

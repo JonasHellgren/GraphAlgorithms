@@ -7,21 +7,13 @@ import java.util.List;
 
 @Getter
 @ToString
-public class Node {
-
-    @ToString.Exclude
-    private final double INIT_VALUE=0;
-
-    private final String name;
-    private final int depthIndex;
-    private double value;
-    private List<Edge> edges;
+public class Node extends NodeAbstract {
 
 
     public Node(String name, int depthIndex) {
         this.name = name;
         this.depthIndex = depthIndex;
-        this.value=INIT_VALUE;
+        this.value=this.INIT_VALUE;
     }
 
     public void setEdges(List<Edge> edges) {
@@ -30,8 +22,6 @@ public class Node {
 
     public void setValue(double value) {
         this.value=value;
-
     }
-
 
 }
