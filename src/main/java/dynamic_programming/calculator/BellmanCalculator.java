@@ -78,9 +78,21 @@ public class BellmanCalculator {
     }
 
     public void addBestNodeAndFindNewBestNodeRecursive(NodeAbstract bestNode) {
-
         nodesOnOptPath.add(bestNode);
+        NodeAbstract newBestNode = findNewBestNode(bestNode);
+        showLogIfBestNodeHasNoDestination(bestNode, newBestNode);
+        if (! (newBestNode instanceof NullNode)) {
+            addBestNodeAndFindNewBestNodeRecursive(newBestNode);
+        }
+    }
 
+    private void showLogIfBestNodeHasNoDestination(NodeAbstract bestNode, NodeAbstract newBestNode) {
+        if (newBestNode instanceof NullNode && bestNode.getDepthIndex() < this.maxDepth) {
+            logger.warning("No destination node for node:" + bestNode.getName());
+        }
+    }
+
+    private NodeAbstract findNewBestNode(NodeAbstract bestNode) {
         NodeAbstract newBestNode = new NullNode();
         double costBest = strategy.badNumber();
         for (Edge edge : bestNode.getEdges()) {
@@ -94,14 +106,7 @@ public class BellmanCalculator {
                 }
             }
         }
-
-        if (newBestNode  instanceof NullNode && bestNode.getDepthIndex() < this.maxDepth) {
-            logger.warning("No destination node for node:" + bestNode.getName());
-        }
-
-        if (! (newBestNode instanceof NullNode)) {
-            addBestNodeAndFindNewBestNodeRecursive(newBestNode);
-        }
+        return newBestNode;
     }
 
     private double calcLongCost(NodeAbstract np, Edge edge) {
