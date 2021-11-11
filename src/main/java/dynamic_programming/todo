@@ -1,4 +1,9 @@
 
 
-opt path
-discount factor
+opt path  x
+discount factor x
+nodesOnOptPath om flera noder är lika bra
+om node hänger löst
+större cost text i node fig
+plantuml
+md fil

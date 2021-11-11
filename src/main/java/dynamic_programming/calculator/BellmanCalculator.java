@@ -12,13 +12,15 @@ public class BellmanCalculator {
     private static final Logger logger = Logger.getLogger(BellmanCalculator.class.getName());
 
     NodeRepo nodeRepo;
+    Strategy strategy;
     double discountFactor;
     int maxDepth;
     int minDepth;
     List<Node> nodesOnOptPath;
 
-    public BellmanCalculator(NodeRepo nodeRepo, double discountFactor) {
+    public BellmanCalculator(NodeRepo nodeRepo,Strategy strategy, double discountFactor) {
         this.nodeRepo = nodeRepo;
+        this.strategy=strategy;
         this.discountFactor = discountFactor;
         this.maxDepth = nodeRepo.findDepthMax();
         this.minDepth = nodeRepo.findDepthMin();
@@ -28,13 +30,13 @@ public class BellmanCalculator {
         return nodesOnOptPath;
     }
 
-    public void setNodeValues(Strategy strategy) {
+    public void setNodeValues() {
 
         for (int depth = nodeRepo.findDepthMax() - 1; depth >= nodeRepo.findDepthMin(); depth--) {
             List<Node> nodesAtDepth = nodeRepo.findNodesAtDepth(depth);
             for (Node np : nodesAtDepth) {
                 List<Double> costs = findCostCandidatesForNode(np);
-                np.setValue(strategy.findBest(costs));
+                np.setValue(strategy.findBestInList(costs));
             }
         }
 
@@ -53,13 +55,14 @@ public class BellmanCalculator {
             if (!nodeRepo.exists(edge.destinationNodeName)) {
                 logger.warning("For node " + np.getName() + ", is the destination node not defined: " + edge.destinationNodeName);
             } else {
-                double dfpd = calcDiscountFactorPowerDepth(np.getDepthIndex());
-                double cost = edge.cost + dfpd * nodeRepo.get(edge.destinationNodeName).getValue();
+                double cost = calcLongCost(np, edge);
                 costList.add(cost);
             }
         }
         return costList;
     }
+
+
 
     public double calcDiscountFactorPowerDepth(int depth) {
         return Math.pow(discountFactor, (depth - minDepth) + 1);
@@ -78,15 +81,13 @@ public class BellmanCalculator {
         nodesOnOptPath.add(bestNode);
 
         Node newBestNode = null;
-        double costBest = Double.MAX_VALUE;
+        double costBest = strategy.badNumber();
         for (Edge edge : bestNode.getEdges()) {
             if (!nodeRepo.exists(edge.destinationNodeName)) {
                 logger.warning("For node " + bestNode.getName() + ", is the destination node not defined: " + edge.destinationNodeName);
             } else {
-                double dfpd = calcDiscountFactorPowerDepth(bestNode.getDepthIndex());
-                double cost = edge.cost + dfpd * nodeRepo.get(edge.destinationNodeName).getValue();
-
-                if (cost < costBest) {
+                double cost = calcLongCost(bestNode, edge);
+                if (strategy.isFirstBetterThanSecond(cost,costBest)) {
                     costBest = cost;
                     newBestNode = nodeRepo.get(edge.destinationNodeName);
                 }
@@ -100,6 +101,11 @@ public class BellmanCalculator {
         if (newBestNode != null) {
             addBestNodeAndFindNewBestNode(newBestNode);
         }
+    }
+
+    private double calcLongCost(Node np, Edge edge) {
+        double dfpd = calcDiscountFactorPowerDepth(np.getDepthIndex());
+        return edge.cost + dfpd * nodeRepo.get(edge.destinationNodeName).getValue();
     }
 }
 

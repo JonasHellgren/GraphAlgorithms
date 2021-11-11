@@ -14,5 +14,7 @@ public interface  Strategy {
         }
     }
 
-    double findBest(List<Double> numbers);
+    double findBestInList(List<Double> numbers);
+    boolean isFirstBetterThanSecond(double num1, double num2);
+    double badNumber();
 }
